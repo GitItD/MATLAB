@@ -1,0 +1,555 @@
+%% Matlab for Brain and Cognitive Scientists
+% Matlab code for Chapter 17
+% Mike X Cohen
+% 
+% This code accompanies the book 
+%      "Matlab for Brain and Cognitive Scientists" (MIT Press, 2017).
+% Using the code without following the book may lead to confusion, 
+% incorrect data analyses, and misinterpretations of results. 
+% Mike X Cohen assumes no responsibility for incorrect use of this code. 
+
+%% eigendecomposition
+%{
+This code performs an eigendecomposition of a 2x2 matrix A, and illustrates the properties of eigenvectors 
+and eigenvalues.
+%}
+A = [3 1; 1 2];
+[eigvecs,eigvals] = eig(A);
+%{
+The eigendecomposition of A is obtained using the eig() function, which returns two matrices: the matrix of 
+eigenvectors (eigvecs) and the matrix of eigenvalues (eigvals).
+%}
+% define vectors
+v1 = [.7 -.5]';
+v2 = eigvecs(:,1);
+
+% matrix-vector multiplication
+v1A = A*v1;
+v2A = A*v2;
+%{
+The purpose of defining v1 and v2 in the code is to illustrate the properties of eigenvectors and eigenvalues.
+
+In particular, the code performs an eigendecomposition of a 2x2 matrix A, and then shows how the 
+eigenvectors of A behave when they are multiplied by A.
+
+v1 and v2 are used to show the difference between a vector that is not an eigenvector of A (v1) and a vector 
+that is an eigenvector of A (v2). The code multiplies A by v1 and v2, and plots the resulting vectors to demonstrate 
+how they relate to the eigenvectors of A.
+
+Overall, v1 and v2 are simply used as examples to help explain the concept of eigenvectors and eigenvalues, 
+and how they relate to a matrix and its eigendecomposition.
+%}
+% maximum value for plotting
+xval = max([ abs(v1A); abs(v2A) ])*1.1;
+%{
+The code calculates the maximum absolute value of the elements in v1A and v2A, and multiplies the result by 1.1. 
+This is done using the max() and abs() functions in MATLAB, which find the maximum absolute value 
+among the elements in a vector or matrix.
+
+By multiplying the maximum absolute value by 1.1, the code ensures that the axis limits will be slightly 
+larger than the maximum absolute value, providing some margin around the plotted vectors.
+The resulting value xval is then used to set the axis limits in the plots created in the code:
+%}
+
+figure(1), clf
+
+subplot(131)
+imagesc(A), axis square
+title('Matrix A')
+%{
+This code is used to visualize the matrix A in the first subplot of a 1x3 subplot figure.
+This visualization is helpful for understanding the structure and values of the matrix. 
+By looking at the colors in the plot, we can see the relative magnitudes of the elements 
+in the matrix and how they are distributed across rows and columns. 
+This can be especially useful for large matrices, where it may be difficult to discern 
+patterns in the raw numerical data.
+%}
+
+subplot(132)
+plot([0 v1(1)],[0 v1(2)],'k','linew',4)
+hold on
+plot([0 v1A(1)],[0 v1A(2)],'r--','linew',2)
+axis square, axis([-xval xval -xval xval])
+plot(get(gca,'xlim'),[0 0],'k:')
+plot([0 0],get(gca,'ylim'),'k:')
+legend({'v';'Av'})
+title('Not an eigenvector!')
+%{
+This code creates the second subplot (subplot(132)) in a 1x3 subplot figure, 
+which shows a visualization of how the vector v1 is transformed by matrix A.
+
+The plot() function is used to plot two vectors: v1 and v1A. 
+The v1 vector is plotted in black with a line width of 4, while v1A is plotted in 
+red dashed lines with a line width of 2. The two vectors are plotted from the origin (0,0) 
+to their respective endpoints.
+
+The hold on command ensures that both vectors are plotted on the same set of axes.
+
+The axis square command ensures that the plot has equal scaling on both the x- and y-axes. 
+The axis([-xval xval -xval xval]) command sets the x- and y-limits of the plot to the maximum 
+absolute value of v1A multiplied by 1.1, which was calculated earlier in the code.
+%}
+
+
+subplot(133)
+plot([0 v2(1)],[0 v2(2)],'k','linew',4)
+hold on
+plot([0 v2A(1)],[0 v2A(2)],'r--','linew',2)
+axis square, axis([-xval xval -xval xval])
+plot(get(gca,'xlim'),[0 0],'k:')
+plot([0 0],get(gca,'ylim'),'k:')
+legend({'v';'Av'})
+title('Yes an eigenvector!')
+%{
+This subplot is showing that the second vector v2 is an eigenvector of the matrix A.
+
+The black arrow represents the original vector v2, and the red dashed arrow represents 
+the transformed vector Av2, where A is the matrix A defined earlier in the code.
+
+Since v2 is an eigenvector of A, the transformed vector Av2 is simply É…2*v2, 
+where É…2 is the corresponding eigenvalue. Therefore, the transformed vector is just a 
+scaled version of the original vector, and the two vectors are pointing in the same direction. 
+This is why the red dashed arrow is colinear with the black arrow.
+
+In contrast, the first vector v1 is not an eigenvector of A, and the transformed vector 
+Av1 is not colinear with v1, as shown in the previous subplot.
+%}
+
+%% PCA on simulated data
+%{
+This code performs principal component analysis (PCA) on simulated data. 
+The data is first generated by drawing 1000 random samples from a two-dimensional 
+normal distribution with mean (0,0) and standard deviations of 1 and 0.4, respectively. 
+Then, the data is rotated by pi/4 radians using a rotation matrix R1. The PCA is performed on 
+both the original data x and the rotated data y.
+
+The figures show the original data (left), the rotated data (middle), and a scatter plot of the two 
+principal components of the rotated data (right). In the left and middle figures, the black lines 
+indicate the direction and magnitude of the principal components 
+(i.e., the eigenvectors and eigenvalues of the covariance matrix), which represent the direction 
+of maximal variance in the data. In the right figure, the x-axis and y-axis correspond to the first 
+and second principal components, respectively.
+
+HOW DO YOU DO A PRINCIPAL COMPONENT ANALYSIS?
+	1. Standardize the range of continuous initial variables
+	2. Compute the covariance matrix to identify correlations
+	3. Compute the eigenvectors and eigenvalues of the covariance matrix to identify the principal components
+	4. Create a feature vector to decide which principal components to keep
+Recast the data along the principal components axes
+%}
+
+% data
+x = [ 1*randn(1000,1) .4*randn(1000,1) ];
+
+% rotation matrix
+th = pi/4;
+R1 = [ cos(th) -sin(th); sin(th) cos(th) ];
+
+% rotate data
+y = x*R1;
+
+% PCA of x (original data)
+x = bsxfun(@minus,x,mean(x,1));
+covmat = (x'*x) / (length(x)-1);
+[evecsX, evalsX] = eig(covmat);
+
+% PCA of y (correlated data)
+y = bsxfun(@minus,y,mean(y,1));
+covmat = (y'*y) / (length(y)-1);
+[evecsY, evalsY] = eig(covmat);
+
+%{
+In these lines, PCA (Principal Component Analysis) is performed on two different datasets x and y.
+
+For x, the dataset is first standardized by subtracting the mean of each variable from each observation 
+using bsxfun(@minus,x,mean(x,1)). Then, the covariance matrix of the standardized data is calculated using (x'*x) / (length(x)-1). 
+Finally, the eigenvectors and eigenvalues of the covariance matrix are computed using the eig function and stored in evecsX and evalsX, respectively.
+
+For y, the dataset is first standardized in the same way as x. 
+
+Note that the only difference between x and y is that y is a rotated version of x. Therefore, the eigenvectors and 
+eigenvalues of y will be different from those of x, but they will represent the same underlying structure in the data.
+%}
+
+figure(2), clf
+% plot original data
+subplot(131)
+plot(x(:,1), x(:,2),'m.','markersize', 5)
+set(gca,'xlim', [-5 5], 'ylim', [-5 5])
+hold on
+plot(evalsX(1, 1)*[0, evecsX(1,1)], evalsX(1, 1)*[0, evecsX(2, 1)],'k','linew',4)
+plot(evalsX(2, 2)*[0, evecsX(1,2)], evalsX(2, 2)*[0, evecsX(2, 2)],'k','linew',4)
+%{
+Plotting a line requires specifying two x points and two y points.
+We want the lines to start at the origin, hence the zeros. The two pairs of
+square brackets define the x and y coordinates. And then the vector is scaled
+by the magnitude of the eigenvalues.
+
+In the code the [0 evecsX(1,1)] and [0 evecsX(1,2)] are used to define the direction of the line. 
+The first element (0) defines the starting point of the line, and the second element (evecsX(1,1) 
+or evecsX(1,2)) defines the end point of the line. The evalsX(1,1) and evalsX(2,2) terms scale 
+the line by the magnitude of the eigenvalues, which indicates the variance of the data along 
+the corresponding eigenvector.
+%}
+xlabel('x-axis'), ylabel('y-axis')
+axis square
+
+
+subplot(132)
+plot(y(:,1), y(:,2), 'm.', 'markersize',5)
+set(gca, 'xlim', [-5 5], 'ylim', [-5 5])
+hold on
+plot(evalsY(1,1)*[0 evecsY(1,1)], evalsY(1,1)*[0 evecsY(2,1)], 'k', 'linew', 4)
+plot(evalsY(2,2)*[0 evecsY(1,2)], evalsY(2,2)*[0 evecsY(2,2)], 'k', 'linew', 4)
+xlabel('x-axis'), ylabel('y-axis')
+axis square
+
+% compute component scores
+pc1 = y*evecsY(:,1);
+pc2 = y*evecsY(:,2);
+%{
+Component scores are the values obtained by projecting the data onto the principal component axes. 
+In other words, each data point is represented by its coordinates in the new coordinate system defined 
+by the principal components. These new coordinates are the component scores.
+
+Component scores can be useful in several ways. They can be used to visualize the data in a reduced-dimensional 
+space spanned by the principal components, to identify patterns or clusters in the data, or to perform regression 
+or classification analyses. They can also be used to reconstruct the original data from the principal components, 
+which can be helpful for data compression or denoising.
+
+In the code, pc1 and pc2 are the component scores corresponding to the first and second principal components, 
+respectively, for the correlated data y. They are computed by multiplying y by the first and second principal 
+component vectors, evecsY(:,1) and evecsY(:,2), respectively.
+%}
+
+subplot(133)
+plot(pc2,pc1,'m.')
+set(gca,'xlim',[-5 5],'ylim',[-5 5])
+xlabel('PC1 axis'), ylabel('PC2 axis')
+axis square
+
+%% vectors vs. values
+%{
+This code generates a random matrix x of size 20x20, calculates its covariance matrix covmat, 
+and computes its eigendecomposition using the eig function. The resulting eigenvectors and 
+eigenvalues are stored in evecsX and evalsX, respectively.
+
+The first image shows the matrix of eigenvectors (evecsX), and the second image shows 
+the matrix of eigenvalues (evalsX), which is a diagonal matrix.
+%}
+x = rand(20);
+covmat = (x'*x) / (length(x)-1);
+[evecsX, evalsX] = eig(covmat); % note: mean-centering is not necessary here because this is not a covariance matrix
+
+figure(3), clf
+subplot(121)
+imagesc(evecsX)
+axis square
+
+subplot(122)
+imagesc(evalsX)
+set(gca,'clim',[-.2 .2])
+axis square
+
+%%
+%{
+This code produces a plot of the eigenvectors and eigenvalues of the covariance matrix of the correlated data y.
+
+The first two lines of the code plot the eigenvectors scaled by their corresponding eigenvalues as black solid lines. 
+This is the same as what was done in the previous plot of the eigenvectors and eigenvalues of the covariance 
+matrix of the original data x. The red dashed lines plot the eigenvectors without scaling.
+
+The red lines represent the principal component directions, which have a length of 1. In contrast, 
+the black lines represent the magnitude of the eigenvalues, which give a measure of the variability 
+in the data along each principal component direction. The length of the black lines is proportional to 
+the square root of the corresponding eigenvalue. So, in general, the red lines will be longer than the 
+black lines, unless the eigenvalues happen to be equal.
+%}
+figure(4), clf
+hold on
+plot(evalsY(1,1)*[0 evecsY(1,1)],evalsY(1,1)*[0 evecsY(2,1)],'k','linew',4)
+plot(evalsY(2,2)*[0 evecsY(1,2)],evalsY(2,2)*[0 evecsY(2,2)],'k','linew',4)
+xlabel('x-axis'), ylabel('y-axis')
+set(gca,'xlim',[-1 1],'ylim',[-1 1])
+
+
+plot([0 evecsY(1,1)],[0 evecsY(2,1)],'r--','linew',2)
+plot([0 evecsY(1,2)],[0 evecsY(2,2)],'r--','linew',2)
+plot(get(gca,'xlim'),[0 0],'k:')
+plot([0 0],get(gca,'ylim'),'k:')
+
+set(gca,'xtick',-1:.25:1,'ytick',-1:.25:1)
+
+%% eigenfaces! 
+%{
+The code is loading a face image from a file, plotting it as a vector in subplot(211), 
+and then showing it as an image in subplot(212) using the imagesc function. 
+The reshape function is used to convert the vector of data into a 128x128 matrix, 
+which is then transposed using the apostrophe to match the orientation of a typical image. 
+The resulting image is displayed using imagesc, which sets the color scale based on the 
+values of the image data, and the colormap gray command is used to display the image in 
+grayscale. The axis image and axis off commands are used to adjust the display settings of the image.
+%}
+% read in one face to see what the data look like
+dat = fread(fopen('faces/3500'));
+
+
+figure(5), clf
+
+% data are a vector... perhaps a plot?
+subplot(211)
+plot(dat)
+
+% nope. image looks better
+subplot(212)
+imagesc(reshape(dat,128,128)')
+axis image, axis off, colormap gray
+%{
+The reshape function in MATLAB is used to change the shape or size of an array without changing the data it contains. 
+The syntax for reshape function is:
+
+B = reshape(A, m, n)
+
+where A is the input array that you want to reshape, m and n are the desired number of rows and 
+columns in the output array, and B is the reshaped array.
+
+The reshape function reads the elements of the input array A in column-major order (also known as Fortran order), 
+which means the elements are read column-wise from the first column to the last, then the second column, and so on. 
+The size of the input array A must be consistent with the specified output size m and n.
+
+When using reshape to fit a smaller data into a larger size, the remaining elements of the larger matrix will be filled with zeros.
+
+In the context of the code you provided, the reshape function is used to reshape the vector dat into a 2D array 
+with dimensions 128x128 so that it can be displayed as an image using the imagesc function. 
+The 128 value is used because the images in the dataset are 128x128 pixels in size.
+%}
+%% import all faces
+%{
+This code reads in all the face images from the faces directory and stores them in a 
+matrix called allfaces. The variable filz contains a list of all the file names in the directory. 
+The dir function is used to obtain this list, and the isdir field is used to remove any directories that may be in the list.
+
+A loop is then used to read in the data from each file using the fread function. 
+The data is stored in each row of the allfaces matrix.
+
+Finally, the images are cropped to reduce their size by masking out a rectangular region in the 
+center of each image. The variable mask is a binary matrix that is true inside the rectangular 
+region and false elsewhere. The any function is used to remove any rows or columns of mask 
+that are all false, and the resulting dimensions are stored in maskdims. 
+The allfaces matrix is then indexed to extract the columns that 
+correspond to the true values in mask.
+%}
+filz = dir('faces/*');
+filz([filz.isdir]) = [];
+
+allfaces = zeros(length(filz),length(dat));
+
+for facei=1:length(filz)
+    allfaces(facei,:) = fread(fopen([ 'faces/' filz(facei).name ]));
+end
+
+% reduce image size by masking
+mask = false(128);
+mask(40:100,20:120) = true;
+maskdims = size(mask(any(mask,2),any(mask,1)));
+allfaces = allfaces(:,mask);
+
+%% PCA on faces
+
+% mean-subtract
+allfaces = bsxfun(@minus,allfaces,mean(allfaces,2));
+
+% covariance
+facecov = (allfaces'*allfaces) / length(allfaces);
+
+% eigendecomposition (might take some seconds...)
+[facevecs,facevals] = eig(facecov);
+
+%% plot some eigfaces
+
+figure(6), clf
+
+for i=1:3
+    subplot(2,3,i)
+    imagesc(reshape(facevecs(:,end-i+1),maskdims(1),maskdims(2))')
+    set(gca,'clim',[-.02 .02])
+    axis image, axis off, title([ 'Eigenface component ' num2str(i) ])
+end
+
+for i=1:3
+    subplot(2,3,i+3)
+    imagesc(reshape(facevecs(:,i),maskdims(1),maskdims(2))')
+    set(gca,'clim',[-.02 .02])
+    axis image, axis off, title([ 'Eigenface component ' num2str(length(facevecs)+1-i) ])
+end
+
+% looks best in grayscale
+colormap gray
+
+%% reconstruct a face from PCs
+
+% select a particular image to reconstruct
+whichface = 10;
+
+% specify how many components (i.e., dimensions)
+numPCs = 10;
+
+% compute the low-dimensional estimate
+facescores = allfaces*facevecs(:,1:numPCs);
+
+
+figure(7), clf
+
+% plot the original (full-dimensional) face
+subplot(121)
+imagesc(reshape(allfaces(whichface,:),maskdims)')
+axis square
+
+% Here we want to plot the low-dimensional reconstruction 
+% of the face from the PCs, but somehow it looks awful.
+% Check my code -- did I make a mistake? (Ok, ok, obviously
+% there is an error somewhere. It's your job to find and fix it!)
+subplot(122)
+imagesc(reshape(facescores(whichface,:)*facevecs(:,1:numPCs)',maskdims)')
+axis square
+
+
+colormap gray
+
+%% ICA vs. PCA
+%{
+Independent Component Analysis (ICA) is a computational method that tries to extract independent, 
+non-Gaussian signals from a set of observations or measurements. The general steps for computing ICA are:
+
+Center the data by subtracting the mean from each column or variable of the data matrix.
+Pre-whiten the data by decorrelating the variables or columns of the data matrix using Principal 
+Component Analysis (PCA) or some other whitening method.
+Apply an ICA algorithm to the pre-whitened data matrix to extract the independent components or sources.
+Optionally, apply a rotation or permutation to the extracted independent components to maximize their non-Gaussianity or some other criterion.
+There are many ICA algorithms, and the choice of algorithm depends on the characteristics of the data and the specific problem being solved. Some popular ICA algorithms include:
+
+Infomax
+FastICA
+Joint Approximate Diagonalization of Eigenmatrices (JADE)
+Independent Vector Analysis (IVA)
+Second-Order Blind Identification (SOBI)
+Most of these algorithms are implemented in various software packages and programming languages, including MATLAB, Python, and R.
+%}
+
+% data
+x = [ 1*randn(1000,1) .05*randn(1000,1) ];
+
+% rotation matrix
+th = -pi/6;
+R1 = [ cos(th) -sin(th); sin(th) cos(th) ];
+th = -pi/3;
+R2 = [ cos(th) -sin(th); sin(th) cos(th) ];
+
+% rotate data
+y = [ x*R1 ; x*R2 ];
+
+
+figure(8), clf
+subplot(221)
+plot(y(:,1),y(:,2),'o')
+
+datarange = max(y(:))*1.2;
+set(gca,'xlim',[-datarange datarange],'ylim',[-datarange datarange])
+xlabel('X axis'), ylabel('Y axis')
+axis square
+title('Data in XY space')
+
+
+
+
+% now PCA
+y = bsxfun(@minus,y,mean(y,1));
+covmat = (y'*y) / length(y);
+[evecsY,evalsY] = eig(covmat);
+%{
+These codes calculate the Principal Component Analysis (PCA) for a given dataset y.
+
+The first line, y = bsxfun(@minus,y,mean(y,1)), subtracts the mean of each column from the corresponding column of the dataset y. 
+This step is known as centering, and it is a necessary pre-processing step for PCA.
+
+The second line, covmat = (y'*y) / length(y), computes the covariance matrix of the centered data y. 
+The covariance matrix is a square matrix that contains information about the relationship between pairs of variables in the data.
+
+The third line, [evecsY,evalsY] = eig(covmat), computes the eigenvectors and eigenvalues of the covariance matrix. 
+The eigenvectors represent the directions of maximum variance in the data, while the eigenvalues represent the amount of variance explained by each eigenvector.
+
+Together, these lines of code calculate the PCA of the data y by finding the eigenvectors and eigenvalues of its covariance matrix. 
+The eigenvectors can be used to transform the data into a new coordinate system, where the first coordinate (principal component) 
+has the largest variance, the second coordinate has the second largest variance, and so on. The new coordinate system can be thought 
+of as a rotated version of the original coordinate system.
+%}
+
+hold on
+colorrgb = [0 0 1; 1 0 0; 0 1 0; 0 0 0; 1 1 0];
+plot([0 evecsY(1,1)],[0 evecsY(2,1)],'color',colorrgb(4,:),'linew',4)
+plot([0 evecsY(1,2)],[0 evecsY(2,2)],'color',colorrgb(5,:),'linew',4)
+
+
+subplot(222)
+pc1 = y*evecsY(:,1);
+pc2 = y*evecsY(:,2);
+
+plot(pc2,pc1,'ms')
+datarange = max([pc1(:); pc2(:)])*1.2;
+set(gca,'xlim',[-datarange datarange],'ylim',[-datarange datarange])
+xlabel('PC1 axis'), ylabel('PC2 axis')
+axis square
+title('Data in PC space')
+
+
+
+
+
+% now ICA
+subplot(223)
+plot(y(:,1),y(:,2),'o')
+datarange = max(y(:))*1.2;
+set(gca,'xlim',[-datarange datarange],'ylim',[-datarange datarange])
+
+ivecs = jader(y');
+hold on
+plot([0 ivecs(1,1)],[0 ivecs(2,1)],'color',colorrgb(4,:),'linew',4)
+plot([0 ivecs(1,2)],[0 ivecs(2,2)],'color',colorrgb(5,:),'linew',4)
+xlabel('X axis'), ylabel('Y axis')
+axis square
+title('Data in XY space')
+%{
+This code block creates a subplot in a figure with 2 rows and 2 columns and selects the third plot. 
+It then plots the original data in the first and second columns of matrix y as blue circles ('o') and 
+sets the limits of the plot axes to the range of values in y.
+
+The independent components of y are then computed using the jader function, 
+which implements the Joint Approximate Diagonalization of Eigen-matrices (JADE) algorithm for ICA. 
+The resulting independent components are stored in matrix ivecs.
+
+JADE (Joint Approximate Diagonalization of Eigenmatrices) is an algorithm for independent component analysis (ICA). 
+It is a method for extracting independent sources from their linear mixtures based on second-order statistics, 
+and it assumes that the sources are non-Gaussian and statistically independent of each other. 
+JADER (JADE with Efficient Rotations) is a variant of JADE that uses efficient rotations to further improve 
+the speed and accuracy of the algorithm. It was proposed by Cardoso and Souloumiac in 1993.
+
+The code then overlays the two vectors that correspond to the first and second independent 
+components onto the plot of the original data, using the plot function. 
+The two vectors are drawn as thick lines with colors corresponding to the 
+fourth and fifth rows of matrix colorrgb. 
+The plot axes are labeled with "X axis" and "Y axis", 
+and the plot is made square with axis square. 
+The plot title is "Data in XY space".
+%}
+
+
+subplot(224)
+ic_scores = ivecs*y';
+plot(ic_scores(1,:),ic_scores(2,:),'ms')
+datarange = max(ic_scores(:))*1.2;
+set(gca,'xlim',[-datarange datarange],'ylim',[-datarange datarange])
+xlabel('IC1 axis'), ylabel('IC2 axis')
+axis square
+title('Data in IC space')
+
+%% end.
